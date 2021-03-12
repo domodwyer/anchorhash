@@ -16,7 +16,7 @@
 
 repos:
   - repo: https://github.com/domodwyer/pre-commit
-    rev: v3.2.2
+    rev: v3.3.0
     hooks:
       - id: rust-check
         stages: [commit, push]
@@ -31,7 +31,23 @@ repos:
         stages: [commit, push]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.13.0
+    rev: v2.16.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
+  
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-executables-have-shebangs
+        stages: [commit, manual]
+      - id: check-json
+        stages: [commit, manual]
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+        stages: [commit, manual]
+      - id: check-merge-conflict
+        stages: [commit, manual]
+      - id: mixed-line-ending
+        args: ["--fix=no"]
+        stages: [commit, manual]

@@ -8,10 +8,8 @@ description = "A consistent hashing algorithm that outperforms state-of-the-art 
 documentation = "https://docs.rs/anchorhash"
 repository = "https://github.com/domodwyer/anchorhash/"
 license = "Apache-2.0"
-keywords = ["consistent hashing", "sharding", "routing", "load balancer"]
+keywords = ["consistent", "hash", "sharding", "routing", "balancer"]
 categories = ["algorithms", "caching", "network-programming"]
-
-publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
