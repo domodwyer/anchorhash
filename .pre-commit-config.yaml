@@ -1,0 +1,37 @@
+# pre-commit configuration
+#
+# Uses https://pre-commit.com/
+#
+# Install with:
+#   pre-commit install -t pre-commit
+#   pre-commit install -t pre-push
+#   pre-commit install -t commit-msg
+#
+# Requires:
+#   - rust (cargo & clippy in path)
+#   - https://github.com/commitizen-tools/commitizen
+#
+# To run manually:
+#   pre-commit run --all
+
+repos:
+  - repo: https://github.com/domodwyer/pre-commit
+    rev: v3.2.2
+    hooks:
+      - id: rust-check
+        stages: [commit, push]
+
+      - id: rust-clippy
+        stages: [commit, push]
+
+      - id: rust-test
+        stages: [commit, push]
+
+      - id: rust-fmt
+        stages: [commit, push]
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]

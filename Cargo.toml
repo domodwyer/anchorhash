@@ -1,0 +1,44 @@
+[package]
+name = "anchorhash"
+version = "0.1.0"
+authors = ["Dom Dwyer <dom@itsallbroken.com>"]
+edition = "2018"
+
+description = "A consistent hashing algorithm that outperforms state-of-the-art algorithms."
+documentation = "https://docs.rs/anchorhash"
+repository = "https://github.com/domodwyer/anchorhash/"
+license = "Apache-2.0"
+keywords = ["consistent hashing", "sharding", "routing", "load balancer"]
+categories = ["algorithms", "caching", "network-programming"]
+
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fnv = "1.0.7"
+hashbrown = "0.9.1"
+thiserror = "1.0.24"
+
+[dev-dependencies]
+criterion = "0.3.4"
+quickcheck = "1.0.3"
+quickcheck_macros = "1.0.0"
+rand = "0.8.3"
+
+[features]
+default = ["fastmod", "simd"]
+fastmod = []
+simd = []
+
+[[bench]]
+name = "anchorhash"
+harness = false
+
+[[bench]]
+name = "range_map"
+harness = false
+
+[[bench]]
+name = "fasthash"
+harness = false
