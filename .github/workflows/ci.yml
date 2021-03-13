@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -43,7 +43,7 @@ jobs:
         command: test
         args: --benches --no-run --verbose
 
-  clippy_check:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
