@@ -13,7 +13,7 @@ use thiserror::Error;
 use crate::{anchor::Anchor, ResourceIterator, ResourceMutIterator};
 
 /// Errors returned when operating on an [`AnchorHash`] instance.
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Error, PartialEq, Clone, Copy)]
 pub enum Error {
     /// A new bucket cannot be added to the AnchorHash instance as it has
     /// reached the configured capacity.
@@ -75,7 +75,7 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 /// [`with_resources`]: Self::with_resources  
 /// [`with_hasher`]: Self::with_hasher  
 /// [`DefaultHasher`]: std::collections::hash_map::DefaultHasher  
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Builder<R, B>
 where
     B: BuildHasher,
@@ -259,6 +259,26 @@ where
     _key_type: PhantomData<K>,
 }
 
+/// Implement `Clone` when both the resource type (`R`) and the hash builder
+/// (`B`) implement clone.
+///
+/// Note the key type (`K`) does NOT have to implement `Clone`.
+impl<K, R, B> Clone for AnchorHash<K, R, B>
+where
+    K: Hash,
+    B: BuildHasher + Clone,
+    R: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            anchor: self.anchor.clone(),
+            hasher: self.hasher.clone(),
+            resources: self.resources.clone(),
+            _key_type: PhantomData::default(),
+        }
+    }
+}
+
 impl<K, R, B> AnchorHash<K, R, B>
 where
     K: Hash,
@@ -439,5 +459,25 @@ mod tests {
             .expect_err("should not allow removing non-existant resource");
 
         assert_eq!(err, Error::ResourceNotFound);
+    }
+
+    #[test]
+    fn test_cloneable() {
+        let mut a: AnchorHash<usize, _, _> = Builder::default().build(2);
+
+        a.add_resource(1).unwrap();
+        a.add_resource(2).unwrap();
+
+        let b = a.clone();
+
+        // Assert resources match
+        let got_a = a.resources().cloned().collect::<HashSet<_>>();
+        let got_b = b.resources().cloned().collect::<HashSet<_>>();
+        assert_eq!(got_a, got_b);
+
+        // Assert they match equally
+        for i in 0..100 {
+            assert_eq!(a.get_resource(i), b.get_resource(i));
+        }
     }
 }

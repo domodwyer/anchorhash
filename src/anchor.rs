@@ -6,7 +6,7 @@ use super::range_map;
 ///
 /// This type is responsible for the consistent mapping of keys to buckets, and
 /// managing the state of the buckets by adding and removing.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[allow(non_snake_case)]
 pub(crate) struct Anchor {
     capacity: u16,
