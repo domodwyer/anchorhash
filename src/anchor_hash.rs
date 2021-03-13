@@ -67,7 +67,9 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 ///
 /// // Use the Fowler–Noll–Vo hash function - fantastic at very small keys, but
 /// // there are better algorithms for larger keys!
-/// let anchor = anchorhash::Builder::with_hasher(FnvBuildHasher::default()).build(50);
+/// let mut anchor = anchorhash::Builder::with_hasher(FnvBuildHasher::default()).build(50);
+/// # anchor.add_resource(1);
+/// # anchor.get_resource(1);
 /// ```
 ///
 /// [`with_resources`]: Self::with_resources
@@ -241,8 +243,9 @@ where
 /// ```
 ///
 /// [`AnchorHash: A Scalable Consistent Hash`]: https://arxiv.org/abs/1812.09674
-/// [`HashMap`]: std::collections::HashMap [easily swapped]:
-/// Builder::with_hasher [`Hash`]: std::hash::Hash
+/// [`HashMap`]: std::collections::HashMap  
+/// [easily swapped]: Builder::with_hasher  
+/// [`Hash`]: std::hash::Hash  
 #[derive(Debug)]
 pub struct AnchorHash<K, R, B>
 where

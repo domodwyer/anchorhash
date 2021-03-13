@@ -19,7 +19,7 @@ pub fn fasthash(k: u32, seed: u32) -> u32 {
 ///
 /// This is a fallback implementation for platforms that do not support the
 /// [`_mm_crc32_u32`] intrinsic. It makes use of the [Fowler–Noll–Vo hash]
-/// function which is extremely quick hashing small amounts of data.
+/// function which is extremely quick at hashing small amounts of data.
 ///
 /// [`_mm_crc32_u32`]: https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_crc32_u32&expand=1287
 /// [Fowler–Noll–Vo hash]: http://www.isthe.com/chongo/tech/comp/fnv/index.html
