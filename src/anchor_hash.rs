@@ -10,7 +10,7 @@ use std::{
 use hashbrown::HashMap;
 use thiserror::Error;
 
-use crate::anchor::Anchor;
+use crate::{anchor::Anchor, ResourceIterator, ResourceMutIterator};
 
 /// Errors returned when operating on an [`AnchorHash`] instance.
 #[derive(Debug, Error, PartialEq)]
@@ -72,9 +72,9 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 /// # anchor.get_resource(1);
 /// ```
 ///
-/// [`with_resources`]: Self::with_resources
-/// [`with_hasher`]: Self::with_hasher
-/// [`DefaultHasher`]: std::collections::hash_map::DefaultHasher
+/// [`with_resources`]: Self::with_resources  
+/// [`with_hasher`]: Self::with_hasher  
+/// [`DefaultHasher`]: std::collections::hash_map::DefaultHasher  
 #[derive(Debug)]
 pub struct Builder<R, B>
 where
@@ -87,7 +87,7 @@ where
 /// Initialise an empty AnchorHash instance using the [`DefaultHasher`] and no
 /// pre-populated resources.
 ///
-/// [`DefaultHasher`]: std::collections::hash_map::DefaultHasher
+/// [`DefaultHasher`]: std::collections::hash_map::DefaultHasher  
 impl<R> Default for Builder<R, RandomState> {
     fn default() -> Self {
         Self {
@@ -109,7 +109,7 @@ where
     /// This method panics if the number of resources given to
     /// [`with_resources`] exceeds `capacity`.
     ///
-    /// [`with_resources`]: Self::with_resources
+    /// [`with_resources`]: Self::with_resources  
     pub fn build<K: Hash>(self, capacity: u16) -> AnchorHash<K, R, B> {
         let mut anchor = Anchor::new(capacity, 0);
         let mut resources = HashMap::new();
@@ -319,6 +319,18 @@ where
         self.resources.remove(&b);
         self.anchor.remove_bucket(b);
         Ok(())
+    }
+
+    /// Returns an iterator yielding references to the configured resources in
+    /// an arbitrary order.
+    pub fn resources(&self) -> ResourceIterator<'_, R> {
+        self.resources.values().into()
+    }
+
+    /// Returns an iterator yielding mutable references to the configured
+    /// resources in an arbitrary order.
+    pub fn resources_mut(&mut self) -> ResourceMutIterator<'_, R> {
+        self.resources.values_mut().into()
     }
 }
 

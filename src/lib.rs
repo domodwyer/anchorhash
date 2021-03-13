@@ -39,9 +39,9 @@
 //! * `fastmod`: efficient range mapping from [Fast Random Integer Generation in
 //!   an Interval] (enabled by default on 64-bit platforms)
 //!
-//! [AnchorHash: A Scalable Consistent Hash]: https://arxiv.org/abs/1812.09674
+//! [AnchorHash: A Scalable Consistent Hash]: https://arxiv.org/abs/1812.09674  
 //! [`AnchorHash`]: crate::AnchorHash
-//! [Fast Random Integer Generation in an Interval]: https://arxiv.org/abs/1805.10941
+//! [Fast Random Integer Generation in an Interval]: https://arxiv.org/abs/1805.10941  
 
 //   Copyright 2021 Dominic Dwyer (dom@itsallbroken.com)
 //
@@ -76,3 +76,6 @@ pub use range_map::*;
 
 mod fasthash;
 pub use fasthash::*;
+
+mod iter;
+pub use iter::*;
