@@ -30,17 +30,21 @@ changes. It does this with a low memory footprint, fast key lookups (10s to 100s
 of millions of lookups per second), optimal disruption and uniform balancing of
 load across resources.
 
-## SIMD
+## Optimisations
 
 This implementation makes use of SSE4.2 instructions by default on `x86_64`
-platforms that support it - the [Fowler–Noll–Vo hash] is used as a fallback. The
-SIMD optimised hash can be manually disabled by disabling the `simd` crate
-feature. 
+platforms to quickly perform internal bucket hashing - the [Fowler–Noll–Vo hash]
+is used as a fallback. The SIMD optimised hash can be manually disabled by
+opting out of the `simd` crate feature. 
 
 This implementation also makes use of Daniel Lemire's fast range mapping
 algorithm presented in [Fast Random Integer Generation in an Interval] when
-compiled on 64-bit architectures. This can be manually disabled by disabling the
-`fastmod` crate feature.
+compiled on 64-bit architectures. This can be manually disabled by opting out of
+the `fastmod` crate feature.
+
+This implementation uses 16-bit integers to maximise cache locality, providing a
+significant speed up for small capacity instances. This limits the total number
+of addressable resources to 65,535.
 
 ## Benchmarks
 
