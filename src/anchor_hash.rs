@@ -186,7 +186,8 @@ where
 /// # Key and Resource Types
 ///
 /// Any type can be used as a resource type, including both owned any borrowed
-/// content.
+/// content. Good examples include socket addresses, connection pools, API
+/// clients, etc.
 ///
 /// Any type that implements [`Hash`] can be used as a key. All primitive types
 /// implement `Hash` (strings, `usize`, etc):
@@ -327,8 +328,16 @@ where
     /// are uniformly distributed over the remaining backends. Keys that did not
     /// map to `resource` continue mapping to the same resource as before the
     /// removal.
+    ///
+    /// Removal runs in linear time w.r.t the number of resources.
     pub fn remove_resource(&mut self, resource: &R) -> Result<()> {
-        // TODO: this should be an O(1) operation using another map of R -> b
+        // This could be an O(1) operation by using a bimap, but then R would
+        // require Hash bounds making this implementation less flexible.
+        //
+        // In practice, a linear search appears 'good enough' from the benchmark
+        // data - removing an element from a capacity=10000 & resources=1000
+        // AnchorHash instance takes ~1us on a 2.6Ghz Intel Core i7.
+
         let b = self
             .resources
             .iter()
