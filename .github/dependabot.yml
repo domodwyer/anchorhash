@@ -1,0 +1,15 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  reviewers:
+  - domodwyer
+  assignees:
+  - domodwyer
+  ignore:
+  - dependency-name: hashbrown
+    versions:
+    - 0.11.0
