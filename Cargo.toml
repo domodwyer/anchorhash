@@ -25,7 +25,7 @@ quickcheck_macros = "1.0.0"
 rand = "0.8.3"
 
 [features]
-default = ["fastmod", "simd"]
+default = ["fastmod"]
 fastmod = []
 simd = []
 
