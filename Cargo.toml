@@ -1,6 +1,6 @@
 [package]
 name = "anchorhash"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Dom Dwyer <dom@itsallbroken.com>"]
 edition = "2018"
 
@@ -25,7 +25,7 @@ quickcheck_macros = "1.0.0"
 rand = "0.8.3"
 
 [features]
-default = ["fastmod", "simd"]
+default = ["fastmod"]
 fastmod = []
 simd = []
 

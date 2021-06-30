@@ -113,7 +113,10 @@ mod tests {
             .collect::<crate::AnchorHash<usize, _, _>>();
 
         let mut got = a.resources().cloned().collect::<Vec<_>>();
-        assert_eq!(resources.sort(), got.sort());
+
+        resources.sort_unstable();
+        got.sort_unstable();
+        assert_eq!(resources, got);
     }
 
     #[test]
@@ -124,7 +127,10 @@ mod tests {
             .into_iter()
             .collect::<crate::AnchorHash<usize, _, _>>();
 
-        let mut got = a.resources_mut().map(|v| v.clone()).collect::<Vec<_>>();
-        assert_eq!(resources.sort(), got.sort());
+        let mut got = a.resources_mut().map(|v| *v).collect::<Vec<_>>();
+
+        resources.sort_unstable();
+        got.sort_unstable();
+        assert_eq!(resources, got);
     }
 }

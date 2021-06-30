@@ -244,8 +244,8 @@ mod tests {
         assert!(a.A.iter().take(WORKING).all(|&v| v == 0));
 
         // Assert all non-working buckets are populated with their bucket index
-        for (i, &v) in a.A.iter().skip(WORKING).enumerate() {
-            assert_eq!(WORKING + i, v as usize);
+        for (&i, v) in a.A.iter().skip(WORKING).zip(WORKING..) {
+            assert_eq!(i, v as u16);
         }
 
         // Assert the stack contains the 5 end buckets
