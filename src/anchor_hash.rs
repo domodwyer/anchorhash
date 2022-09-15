@@ -13,7 +13,7 @@ use thiserror::Error;
 use crate::{anchor::Anchor, ResourceIterator, ResourceMutIterator};
 
 /// Errors returned when operating on an [`AnchorHash`] instance.
-#[derive(Debug, Error, PartialEq, Clone, Copy)]
+#[derive(Debug, Error, PartialEq, Eq, Clone, Copy)]
 pub enum Error {
     /// A new bucket cannot be added to the AnchorHash instance as it has
     /// reached the configured capacity.
