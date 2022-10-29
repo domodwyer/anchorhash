@@ -101,15 +101,15 @@ impl<R, B> Builder<R, B>
 where
     B: BuildHasher,
 {
-    /// Initialise the `AnchroHash` instance with support for up to `capacity`
+    /// Initialise the [`AnchorHash`] instance with support for up to `capacity`
     /// number of resources.
     ///
     /// # Panics
     ///
     /// This method panics if the number of resources given to
-    /// [`with_resources`] exceeds `capacity`.
+    /// [`with_resources()`] exceeds `capacity`.
     ///
-    /// [`with_resources`]: Self::with_resources  
+    /// [`with_resources()`]: Self::with_resources  
     pub fn build<K: Hash>(self, capacity: u16) -> AnchorHash<K, R, B> {
         let mut anchor = Anchor::new(capacity, 0);
         let mut resources = HashMap::new();
@@ -159,14 +159,14 @@ where
     }
 }
 
-/// An `AnchorHash` instance consistently maps keys of type `K` to resources of
-/// type `R` using the algorithm described in [`AnchorHash: A Scalable
+/// An [`AnchorHash`] instance consistently maps keys of type `K` to resources
+/// of type `R` using the algorithm described in [`AnchorHash: A Scalable
 /// Consistent Hash`].
 ///
 /// The AnchorHash algorithm uniformly balances keys across all the configured
-/// backends and performs optimal (minimal) rebalancing when existing backends
-/// are removed or new backends added. AnchorHash achieves this using only a few
-/// bytes per resource, and outperforms state-of-the-art algorithms.
+/// resources and performs optimal (minimal) rebalancing when existing resources
+/// are removed or new resources added. AnchorHash achieves this using only a
+/// few bytes per resource, and outperforms state-of-the-art algorithms.
 ///
 /// # Hashing Algorithm
 ///
@@ -287,6 +287,8 @@ where
     R: PartialEq,
 {
     /// Consistently hash `key` to a configured resource.
+    ///
+    /// This method will return [`None`] when `self` contains no resources.
     pub fn get_resource(&self, key: K) -> Option<&R> {
         // Hash the key to a u32 value
         let mut hasher = self.hasher.build_hasher();
@@ -305,10 +307,10 @@ where
     /// When a new resource is added, keys immediately begin mapping to it, and
     /// the load across all the resources remains uniformly balanced. If there
     /// were 3 backends, each handling `1/3` of the load, adding a new resource
-    /// (total: 4) means they all immediately become responsible for `1/4` the
+    /// (total: 4) means they all immediately become responsible for `1/4` of
     /// load.
     ///
-    /// A subset of keys from each backend is mapped to the new resource
+    /// A subset of keys from each resource is mapped to the new resource
     /// ensuring minimal disruption with optimal load sharing.
     pub fn add_resource(&mut self, resource: R) -> Result<()> {
         let b = self
@@ -325,9 +327,9 @@ where
     /// Remove the resource, preventing keys from mapping to `resource`.
     ///
     /// When `resource` is removed, all the keys that previously mapped to it
-    /// are uniformly distributed over the remaining backends. Keys that did not
-    /// map to `resource` continue mapping to the same resource as before the
-    /// removal.
+    /// are uniformly distributed over the remaining resources. Keys that did
+    /// not map to `resource` continue mapping to the same resource as before
+    /// the removal.
     ///
     /// Removal runs in linear time w.r.t the number of resources.
     pub fn remove_resource(&mut self, resource: &R) -> Result<()> {
@@ -375,6 +377,27 @@ mod tests {
     }
 
     #[test]
+    fn test_build_empty_add_resource() {
+        let mut a: AnchorHash<usize, _, _> = Builder::default()
+            .with_resources(Vec::<usize>::new())
+            .build(10);
+        assert_eq!(a.resources().len(), 0);
+
+        // With no resources, the key maps to nothing.
+        assert!(a.get_resource(42).is_none());
+
+        a.add_resource(24).expect("should add new resource");
+
+        // And now the key maps to the only bucket
+        assert_eq!(a.get_resource(42), Some(&24));
+
+        a.remove_resource(&24).expect("should remove resource");
+
+        // With no resources, the key maps to nothing once again.
+        assert!(a.get_resource(42).is_none());
+    }
+
+    #[test]
     fn test_build_with_resources() {
         // Use a set of numbers as a dummy array of resources
         let servers = vec!["A", "B", "C", "D"];
@@ -388,6 +411,7 @@ mod tests {
 
         // Check the resource map is fully populated
         assert_eq!(a.resources.len(), servers.len());
+        assert_eq!(a.resources().len(), servers.len());
 
         // All the keys map to working buckets (and are distinct as the map
         // capacity matches the number of working buckets)
@@ -412,7 +436,7 @@ mod tests {
 
         // Ensure the key maps to one of the two servers
         let got = a.get_resource("a key").expect("should return a resource");
-        assert!(dbg!(got) == &&server_a || got == &&server_b);
+        assert!(got == &&server_a || got == &&server_b);
 
         // Remove server B and ensure the key maps to server A
         a.remove_resource(&&server_b)
@@ -433,7 +457,7 @@ mod tests {
 
         // Ensure the key maps to one of the two servers
         let got = a.get_resource("a key").expect("should return a resource");
-        assert!(dbg!(got) == &&server_a || got == &&server_b);
+        assert!(got == &&server_a || got == &&server_b);
 
         // Remove server B and ensure the key maps to server A
         a.remove_resource(&&server_b)
