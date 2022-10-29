@@ -377,6 +377,27 @@ mod tests {
     }
 
     #[test]
+    fn test_build_empty_add_resource() {
+        let mut a: AnchorHash<usize, _, _> = Builder::default()
+            .with_resources(Vec::<usize>::new())
+            .build(10);
+        assert_eq!(a.resources().len(), 0);
+
+        // With no resources, the key maps to nothing.
+        assert!(a.get_resource(42).is_none());
+
+        a.add_resource(24).expect("should add new resource");
+
+        // And now the key maps to the only bucket
+        assert_eq!(a.get_resource(42), Some(&24));
+
+        a.remove_resource(&24).expect("should remove resource");
+
+        // With no resources, the key maps to nothing once again.
+        assert!(a.get_resource(42).is_none());
+    }
+
+    #[test]
     fn test_build_with_resources() {
         // Use a set of numbers as a dummy array of resources
         let servers = vec!["A", "B", "C", "D"];
@@ -390,6 +411,7 @@ mod tests {
 
         // Check the resource map is fully populated
         assert_eq!(a.resources.len(), servers.len());
+        assert_eq!(a.resources().len(), servers.len());
 
         // All the keys map to working buckets (and are distinct as the map
         // capacity matches the number of working buckets)
@@ -414,7 +436,7 @@ mod tests {
 
         // Ensure the key maps to one of the two servers
         let got = a.get_resource("a key").expect("should return a resource");
-        assert!(dbg!(got) == &&server_a || got == &&server_b);
+        assert!(got == &&server_a || got == &&server_b);
 
         // Remove server B and ensure the key maps to server A
         a.remove_resource(&&server_b)
@@ -435,7 +457,7 @@ mod tests {
 
         // Ensure the key maps to one of the two servers
         let got = a.get_resource("a key").expect("should return a resource");
-        assert!(dbg!(got) == &&server_a || got == &&server_b);
+        assert!(got == &&server_a || got == &&server_b);
 
         // Remove server B and ensure the key maps to server A
         a.remove_resource(&&server_b)
