@@ -37,22 +37,14 @@ jobs:
         command: test
         args: --no-default-features --lib --examples --tests --verbose
 
-    - name: bench
+    - name: build benchmarks
       uses: actions-rs/cargo@v1
       with:
         command: test
         args: --benches --no-run --verbose
 
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          override: true
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features -- -D warnings
+    - name: clippy
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-features
