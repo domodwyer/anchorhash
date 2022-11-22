@@ -299,7 +299,7 @@ where
         let b = self.anchor.get_bucket(key as u32);
 
         // Resolve the bucket -> resource indirection
-        self.resources.get(&b)
+        self.resources.get(&*b)
     }
 
     /// Add `resource`, allowing keys to map to it.
