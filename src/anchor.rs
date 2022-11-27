@@ -4,6 +4,7 @@ use crate::fasthash;
 
 use super::range_map;
 
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum Bucket {
     Original(u16),
     Remapped(u16)
@@ -298,6 +299,26 @@ mod tests {
         if a.add_bucket().is_some() {
             panic!("adding bucket to full anchor should fail");
         }
+    }
+
+    #[test]
+    fn test_remap_bucket() {
+        const SIZE: u16 = 20;
+        let mut a = Anchor::new(SIZE, SIZE - 1);
+
+        // 0 should map to 0
+        let bucket = a.get_bucket(0);
+        assert_eq!(bucket, Bucket::Original(0));
+
+        // when zero is removed it should remap to 18
+        a.remove_bucket(0);
+        let bucket = a.get_bucket(0);
+        assert_eq!(bucket, Bucket::Remapped(18));
+
+        // when zero is added back it should remap to 0
+        a.add_bucket();
+        let bucket = a.get_bucket(0);
+        assert_eq!(bucket, Bucket::Original(0));
     }
 
     #[quickcheck]
