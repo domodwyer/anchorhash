@@ -7,7 +7,7 @@ use super::range_map;
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum Bucket {
     Original(u16),
-    Remapped(u16)
+    Remapped(u16),
 }
 
 impl Deref for Bucket {
@@ -16,7 +16,7 @@ impl Deref for Bucket {
     fn deref(&self) -> &Self::Target {
         match self {
             Bucket::Original(v) => v,
-            Bucket::Remapped(v) => v
+            Bucket::Remapped(v) => v,
         }
     }
 }
