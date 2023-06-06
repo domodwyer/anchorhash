@@ -15,7 +15,7 @@ categories = ["algorithms", "caching", "network-programming"]
 
 [dependencies]
 fnv = "1.0.7"
-hashbrown = "0.13.1"
+hashbrown = "0.14.0"
 thiserror = "1.0.24"
 
 [dev-dependencies]
