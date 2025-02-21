@@ -2,15 +2,20 @@ use std::{
     collections::hash_map::RandomState,
     convert::TryFrom,
     default::Default,
+    fmt,
     hash::{BuildHasher, Hash, Hasher},
     iter::FromIterator,
     marker::PhantomData,
+    ops::Deref,
 };
 
 use hashbrown::HashMap;
 use thiserror::Error;
 
-use crate::{anchor::Anchor, ResourceIterator, ResourceMutIterator};
+use crate::{
+    anchor::{Anchor, Bucket},
+    ResourceIterator, ResourceMutIterator,
+};
 
 /// Errors returned when operating on an [`AnchorHash`] instance.
 #[derive(Debug, Error, PartialEq, Eq, Clone, Copy)]
@@ -26,6 +31,35 @@ pub enum Error {
 }
 
 type Result<T, E = Error> = std::result::Result<T, E>;
+
+/// This indicates if anchorhash returned a resource that didn't require and remapping.
+#[derive(Debug, PartialEq)]
+pub enum Resource<R> {
+    /// The resource was returned as it was found in the original bucket.
+    Original(R),
+    /// The resource was rehashed to a new bucket.
+    Rehashed(R),
+}
+
+impl<T> Deref for Resource<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Resource::Original(v) => v,
+            Resource::Rehashed(v) => v,
+        }
+    }
+}
+
+impl<T: fmt::Display> fmt::Display for Resource<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Resource::Original(v) => write!(f, "{}", v),
+            Resource::Rehashed(v) => write!(f, "{}", v),
+        }
+    }
+}
 
 /// Initialise a new [`AnchorHash`] instance.
 ///
@@ -289,7 +323,7 @@ where
     /// Consistently hash `key` to a configured resource.
     ///
     /// This method will return [`None`] when `self` contains no resources.
-    pub fn get_resource(&self, key: K) -> Option<&R> {
+    pub fn get_resource(&self, key: K) -> Option<Resource<&R>> {
         // Hash the key to a u32 value
         let mut hasher = self.hasher.build_hasher();
         key.hash(&mut hasher);
@@ -299,7 +333,14 @@ where
         let b = self.anchor.get_bucket(key as u32);
 
         // Resolve the bucket -> resource indirection
-        self.resources.get(&b)
+        let resource = self.resources.get(&*b);
+        match resource {
+            Some(r) => match b {
+                Bucket::Original(_) => Some(Resource::Original(r)),
+                Bucket::Remapped(_) => Some(Resource::Rehashed(r)),
+            },
+            None => None,
+        }
     }
 
     /// Add `resource`, allowing keys to map to it.
@@ -389,7 +430,7 @@ mod tests {
         a.add_resource(24).expect("should add new resource");
 
         // And now the key maps to the only bucket
-        assert_eq!(a.get_resource(42), Some(&24));
+        assert_eq!(a.get_resource(42), Some(Resource::Original(&24)));
 
         a.remove_resource(&24).expect("should remove resource");
 
@@ -435,13 +476,13 @@ mod tests {
         a.add_resource(&server_b).unwrap();
 
         // Ensure the key maps to one of the two servers
-        let got = a.get_resource("a key").expect("should return a resource");
+        let got = *a.get_resource("a key").expect("should return a resource");
         assert!(got == &&server_a || got == &&server_b);
 
         // Remove server B and ensure the key maps to server A
         a.remove_resource(&&server_b)
             .expect("removing existing resource should succeed");
-        let got = a.get_resource("a key").expect("should return a resource");
+        let got = *a.get_resource("a key").expect("should return a resource");
         assert_eq!(got, &&server_a);
     }
 
@@ -456,13 +497,13 @@ mod tests {
         a.add_resource(&server_b).unwrap();
 
         // Ensure the key maps to one of the two servers
-        let got = a.get_resource("a key").expect("should return a resource");
+        let got = *a.get_resource("a key").expect("should return a resource");
         assert!(got == &&server_a || got == &&server_b);
 
         // Remove server B and ensure the key maps to server A
         a.remove_resource(&&server_b)
             .expect("removing existing resource should succeed");
-        let got = a.get_resource("a key").expect("should return a resource");
+        let got = *a.get_resource("a key").expect("should return a resource");
         assert_eq!(got, &&server_a);
     }
 
