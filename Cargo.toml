@@ -19,7 +19,7 @@ hashbrown = "0.16.0"
 thiserror = "2.0.0"
 
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
 rand = "0.9.0"
