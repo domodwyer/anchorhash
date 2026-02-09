@@ -22,7 +22,7 @@ thiserror = "2.0.0"
 criterion = "0.8.1"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
-rand = "0.9.0"
+rand = "0.10.0"
 
 [features]
 default = ["fastmod"]
