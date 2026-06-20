@@ -1,6 +1,25 @@
+use std::ops::Deref;
+
 use crate::fasthash;
 
 use super::range_map;
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum Bucket {
+    Original(u16),
+    Remapped(u16),
+}
+
+impl Deref for Bucket {
+    type Target = u16;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Bucket::Original(v) => v,
+            Bucket::Remapped(v) => v,
+        }
+    }
+}
 
 /// Anchor is an implementation of Algorithm 3 from the AnchorHash paper.
 ///
@@ -83,9 +102,10 @@ impl Anchor {
     ///     b←h                         // b←H_W_b(k)
     ///   return b
     /// ```
-    pub(crate) fn get_bucket(&self, k: u32) -> u16 {
+    pub(crate) fn get_bucket(&self, k: u32) -> Bucket {
         // Map the (already hashed) key into the range [0, capacity)
         let mut b = range_map(k, self.capacity as u32) as usize;
+        let mut remapped = false;
 
         // While b is removed
         while self.A[b] > 0 {
@@ -100,6 +120,7 @@ impl Anchor {
 
             // Wb[h] != h (b removed prior to h)
             while self.A[h as usize] >= self.A[b] {
+                remapped = true;
                 // search for Wb[h]
                 h = self.K[h as usize] as _;
             }
@@ -107,8 +128,11 @@ impl Anchor {
             // b ← HWb(k)
             b = h as _;
         }
-
-        b as u16
+        if remapped {
+            Bucket::Remapped(b as _)
+        } else {
+            Bucket::Original(b as _)
+        }
     }
 
     /// Add a new bucket to the anchor.
@@ -277,6 +301,26 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_remap_bucket() {
+        const SIZE: u16 = 20;
+        let mut a = Anchor::new(SIZE, SIZE - 1);
+
+        // 0 should map to 0
+        let bucket = a.get_bucket(0);
+        assert_eq!(bucket, Bucket::Original(0));
+
+        // when zero is removed it should remap to 18
+        a.remove_bucket(0);
+        let bucket = a.get_bucket(0);
+        assert_eq!(bucket, Bucket::Remapped(18));
+
+        // when zero is added back it should remap to 0
+        a.add_bucket();
+        let bucket = a.get_bucket(0);
+        assert_eq!(bucket, Bucket::Original(0));
+    }
+
     #[quickcheck]
     fn test_get_returns_working_buckets(mut keys: Vec<u16>) -> bool {
         let num_buckets = match keys.pop() {
@@ -303,7 +347,7 @@ mod tests {
 
             // Remove the bucket to drive the removal logic.
             if working.len() > 1 {
-                a.remove_bucket(got);
+                a.remove_bucket(*got);
                 assert!(working.remove(&got));
             }
         }
@@ -332,7 +376,7 @@ mod tests {
         for _ in 0..KEYS {
             let k = rng.gen();
             let got = a.get_bucket(k);
-            let counter = seen.entry(got).or_insert(0);
+            let counter = seen.entry(*got).or_insert(0);
             *counter += 1;
         }
 
